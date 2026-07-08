@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.sentenceadventurekids"
+    namespace = "com.ruqiazaitoon.sentenceadventurekids"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.sentenceadventurekids"
+        applicationId = "com.ruqiazaitoon.sentenceadventurekids"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
+    implementation(libs.play.services.ads)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

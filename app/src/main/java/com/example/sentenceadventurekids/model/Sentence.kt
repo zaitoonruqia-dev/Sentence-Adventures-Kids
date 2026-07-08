@@ -1,4 +1,4 @@
-package com.example.sentenceadventurekids.model
+package com.ruqiazaitoon.sentenceadventurekids.model
 
 data class Sentence(
     val id: String,

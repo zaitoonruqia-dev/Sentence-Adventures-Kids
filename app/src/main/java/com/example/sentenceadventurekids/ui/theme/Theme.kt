@@ -1,4 +1,4 @@
-package com.example.sentenceadventurekids.ui.theme
+package com.ruqiazaitoon.sentenceadventurekids.ui.theme
 
 import android.app.Activity
 import android.os.Build

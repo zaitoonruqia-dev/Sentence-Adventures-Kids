@@ -1,129 +1,202 @@
-package com.example.sentenceadventurekids.ui.screens.games
+package com.ruqiazaitoon.sentenceadventurekids.ui.screens.games
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import android.net.Uri
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.Backspace
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.sentenceadventurekids.ui.theme.*
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.CelebrationDialog
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryActionButton
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryPanel
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryTopBar
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StorybookScreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsCoral
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsDeepBlue
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsGrassGreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsInk
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsMagicPurple
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsMint
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsPanel
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsSkyBlue
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsSunnyYellow
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SentenceBuilderScreen(
     sentence: String,
     onBack: () -> Unit,
     onComplete: () -> Unit
 ) {
-    val cleanSentence = remember { sentence.trim().removeSuffix(".") }
-    val correctWords = remember { cleanSentence.split(" ") }
-    val shuffledWords = remember { correctWords.shuffled().toMutableStateList() }
-    val currentWords = remember { mutableStateListOf<String>() }
+    val cleanSentence = remember(sentence) {
+        Uri.decode(sentence).trim().trim('.', '!', '?')
+    }
+    val correctWords = remember(cleanSentence) { cleanSentence.split(" ").filter { it.isNotBlank() } }
+    val shuffledWords = remember(cleanSentence) { correctWords.shuffled().toMutableStateList() }
+    val currentWords = remember(cleanSentence) { mutableStateListOf<String>() }
+    var showSuccess by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Sentence Builder") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { padding ->
+    StorybookScreen {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(KidsMagicPurple, KidsCloudWhite)
-                    )
-                ),
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                "Build the sentence!",
-                style = MaterialTheme.typography.headlineLarge.copy(color = KidsDeepBlue)
+            StoryTopBar(
+                title = "Build the Sentence",
+                subtitle = "Tap words in the right order",
+                onBack = onBack
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Current built sentence
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .padding(horizontal = 16.dp)
-                    .background(Color.White.copy(alpha = 0.5f), MaterialTheme.shapes.medium),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+            StoryPanel(
+                modifier = Modifier.fillMaxWidth(),
+                color = KidsPanel,
+                borderColor = KidsMagicPurple
             ) {
-                currentWords.forEachIndexed { index, word ->
-                    WordTile(
-                        word = word,
-                        onClick = {
-                            currentWords.removeAt(index)
-                            shuffledWords.add(word)
-                        },
-                        color = KidsSunnyYellow
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        cleanSentence,
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            color = KidsInk,
+                            fontWeight = FontWeight.Black
+                        ),
+                        textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "Remember it, then rebuild it below.",
+                        style = MaterialTheme.typography.bodyLarge.copy(color = KidsDeepBlue),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // Available words
-            FlowRow(
-                modifier = Modifier.padding(16.dp),
-                horizontalArrangement = Arrangement.Center,
-                maxItemsInEachRow = 3
-            ) {
-                shuffledWords.forEach { word ->
-                    WordTile(
-                        word = word,
-                        onClick = {
-                            shuffledWords.remove(word)
-                            currentWords.add(word)
-                            if (currentWords.toList() == correctWords) {
-                                onComplete()
+            StoryPanel(modifier = Modifier.fillMaxWidth(), borderColor = KidsSunnyYellow) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Your sentence", style = MaterialTheme.typography.titleLarge.copy(color = KidsInk, fontWeight = FontWeight.Bold))
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(132.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (currentWords.isEmpty()) {
+                            Text(
+                                "Tap a word tile to start",
+                                modifier = Modifier.padding(16.dp),
+                                style = MaterialTheme.typography.titleLarge.copy(color = KidsDeepBlue)
+                            )
+                        } else {
+                            currentWords.forEachIndexed { index, word ->
+                                WordTile(
+                                    word = word,
+                                    onClick = {
+                                        currentWords.removeAt(index)
+                                        shuffledWords.add(word)
+                                    },
+                                    color = KidsSunnyYellow
+                                )
                             }
-                        },
-                        color = KidsSkyBlue
-                    )
-                    Spacer(modifier = Modifier.padding(4.dp))
+                        }
+                    }
                 }
+            }
+
+            StoryPanel(modifier = Modifier.fillMaxWidth(), borderColor = KidsSkyBlue) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Word tiles", style = MaterialTheme.typography.titleLarge.copy(color = KidsInk, fontWeight = FontWeight.Bold))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        shuffledWords.forEach { word ->
+                            WordTile(
+                                word = word,
+                                onClick = {
+                                    shuffledWords.remove(word)
+                                    currentWords.add(word)
+                                    if (currentWords.toList() == correctWords) {
+                                        showSuccess = true
+                                    }
+                                },
+                                color = KidsMint
+                            )
+                        }
+                    }
+                }
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                StoryActionButton(
+                    text = "Undo",
+                    icon = Icons.AutoMirrored.Filled.Backspace,
+                    onClick = {
+                        if (currentWords.isNotEmpty()) {
+                            val last = currentWords.removeAt(currentWords.lastIndex)
+                            shuffledWords.add(last)
+                        }
+                    },
+                    color = KidsCoral,
+                    modifier = Modifier.weight(1f)
+                )
+                StoryActionButton(
+                    text = "Reset",
+                    icon = Icons.Default.RestartAlt,
+                    onClick = {
+                        currentWords.clear()
+                        shuffledWords.clear()
+                        shuffledWords.addAll(correctWords.shuffled())
+                    },
+                    color = KidsGrassGreen,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
-}
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun FlowRow(
-    modifier: Modifier = Modifier,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-    maxItemsInEachRow: Int = Int.MAX_VALUE,
-    content: @Composable () -> Unit
-) {
-    androidx.compose.foundation.layout.FlowRow(
-        modifier = modifier,
-        horizontalArrangement = horizontalArrangement,
-        maxItemsInEachRow = maxItemsInEachRow
-    ) {
-        content()
+    if (showSuccess) {
+        CelebrationDialog(
+            title = "You Built It!",
+            message = "That sentence is in the perfect order.",
+            buttonText = "Collect Bonus",
+            accent = KidsMagicPurple,
+            onDismiss = onComplete
+        )
     }
 }
 
@@ -134,19 +207,27 @@ fun WordTile(
     color: Color
 ) {
     Surface(
-        onClick = onClick,
+        modifier = Modifier
+            .padding(5.dp)
+            .clickable { onClick() },
         color = color,
-        shape = MaterialTheme.shapes.medium,
-        shadowElevation = 4.dp,
-        modifier = Modifier.padding(4.dp)
+        shape = RoundedCornerShape(18.dp),
+        border = BorderStroke(2.dp, Color.White.copy(alpha = 0.82f)),
+        shadowElevation = 5.dp
     ) {
-        Text(
-            text = word,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            style = MaterialTheme.typography.titleLarge.copy(
-                color = KidsDeepBlue,
-                fontWeight = FontWeight.Bold
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            androidx.compose.material3.Icon(Icons.Default.Extension, contentDescription = null, tint = KidsDeepBlue)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = word,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = KidsInk,
+                    fontWeight = FontWeight.Black
+                )
             )
-        )
+        }
     }
 }

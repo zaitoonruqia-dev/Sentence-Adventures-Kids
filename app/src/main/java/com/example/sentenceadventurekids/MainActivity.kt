@@ -1,4 +1,4 @@
-package com.example.sentenceadventurekids
+package com.ruqiazaitoon.sentenceadventurekids
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.sentenceadventurekids.ui.theme.SentenceAdventureKidsTheme
-import com.example.sentenceadventurekids.navigation.AppNavigation
+import com.ruqiazaitoon.sentenceadventurekids.ads.AdsController
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.SentenceAdventureKidsTheme
+import com.ruqiazaitoon.sentenceadventurekids.navigation.AppNavigation
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AdsController.initialize(applicationContext)
         enableEdgeToEdge()
         setContent {
             SentenceAdventureKidsTheme {

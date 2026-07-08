@@ -1,28 +1,41 @@
-package com.example.sentenceadventurekids.ui.screens.map
+package com.ruqiazaitoon.sentenceadventurekids.ui.screens.map
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.sentenceadventurekids.data.ProgressRepository
-import com.example.sentenceadventurekids.ui.theme.*
+import com.ruqiazaitoon.sentenceadventurekids.data.ProgressRepository
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryPanel
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryTopBar
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StorybookScreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.screens.journey.readingWorlds
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsBrightOrange
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsDeepBlue
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsInk
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgressMapScreen(
     onBack: () -> Unit,
@@ -30,62 +43,55 @@ fun ProgressMapScreen(
 ) {
     val unlockedLevels by ProgressRepository.unlockedLevels.collectAsState()
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Adventure Map", style = MaterialTheme.typography.headlineLarge) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = KidsSkyBlue)
-            )
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(Brush.verticalGradient(listOf(KidsSkyBlue, KidsGrassGreen)))
+    StorybookScreen {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceEvenly
-            ) {
-                MapNode(level = 3, isUnlocked = 3 in unlockedLevels, label = "Dino Island", onClick = { onLevelSelect(3) })
-                MapNode(level = 2, isUnlocked = 2 in unlockedLevels, label = "Jungle", onClick = { onLevelSelect(2) })
-                MapNode(level = 1, isUnlocked = 1 in unlockedLevels, label = "Farm", onClick = { onLevelSelect(1) })
-            }
-        }
-    }
-}
+            StoryTopBar(
+                title = "Adventure Map",
+                subtitle = "Open worlds as you finish reading cards",
+                onBack = onBack
+            )
 
-@Composable
-fun MapNode(level: Int, isUnlocked: Boolean, label: String, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .background(if (isUnlocked) KidsSunnyYellow else Color.Gray)
-                .border(4.dp, KidsDeepBlue, CircleShape)
-                .clickable(enabled = isUnlocked) { onClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            if (isUnlocked) {
-                Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(50.dp), tint = KidsDeepBlue)
-            } else {
-                Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.White)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                itemsIndexed(readingWorlds) { index, world ->
+                    val isUnlocked = world.id in unlockedLevels
+                    StoryPanel(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = isUnlocked) { onLevelSelect(world.id) },
+                        color = if (isUnlocked) Color.White.copy(alpha = 0.9f) else Color.White.copy(alpha = 0.54f),
+                        borderColor = if (isUnlocked) world.color else KidsDeepBlue.copy(alpha = 0.16f)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "${index + 1}",
+                                style = MaterialTheme.typography.displayLarge.copy(
+                                    color = if (isUnlocked) KidsBrightOrange else KidsDeepBlue.copy(alpha = 0.4f),
+                                    fontWeight = FontWeight.Black
+                                )
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Image(painterResource(world.art), contentDescription = null, modifier = Modifier.size(76.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(world.title, style = MaterialTheme.typography.headlineLarge.copy(color = KidsInk, fontWeight = FontWeight.Black))
+                                Text(world.subtitle, style = MaterialTheme.typography.bodyLarge.copy(color = KidsDeepBlue))
+                            }
+                            Icon(
+                                imageVector = if (isUnlocked) Icons.Default.CheckCircle else Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = if (isUnlocked) world.color else KidsDeepBlue.copy(alpha = 0.38f),
+                                modifier = Modifier.size(34.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Bold,
-                color = KidsDeepBlue
-            )
-        )
     }
 }

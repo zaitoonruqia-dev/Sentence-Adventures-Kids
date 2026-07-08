@@ -1,17 +1,17 @@
-package com.example.sentenceadventurekids.navigation
+package com.ruqiazaitoon.sentenceadventurekids.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.sentenceadventurekids.ui.screens.home.HomeScreen
-import com.example.sentenceadventurekids.ui.screens.journey.JourneyScreen
-import com.example.sentenceadventurekids.ui.screens.journey.ReadingLevelScreen
-import com.example.sentenceadventurekids.ui.screens.games.SentenceBuilderScreen
-import com.example.sentenceadventurekids.ui.screens.parent.ParentDashboardScreen
-import com.example.sentenceadventurekids.ui.screens.rewards.RewardsScreen
-import com.example.sentenceadventurekids.ui.screens.map.ProgressMapScreen
-import com.example.sentenceadventurekids.data.ProgressRepository
+import com.ruqiazaitoon.sentenceadventurekids.ui.screens.home.HomeScreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.screens.journey.JourneyScreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.screens.journey.ReadingLevelScreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.screens.games.SentenceBuilderScreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.screens.parent.ParentDashboardScreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.screens.rewards.RewardsScreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.screens.map.ProgressMapScreen
+import com.ruqiazaitoon.sentenceadventurekids.data.ProgressRepository
 
 @Composable
 fun AppNavigation() {

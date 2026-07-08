@@ -1,123 +1,150 @@
-package com.example.sentenceadventurekids.ui.screens.rewards
+package com.ruqiazaitoon.sentenceadventurekids.ui.screens.rewards
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Stars
-import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Stars
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.sentenceadventurekids.data.ProgressRepository
-import com.example.sentenceadventurekids.ui.theme.*
+import com.ruqiazaitoon.sentenceadventurekids.R
+import com.ruqiazaitoon.sentenceadventurekids.ads.AdsController
+import com.ruqiazaitoon.sentenceadventurekids.ads.FriendlyBannerAd
+import com.ruqiazaitoon.sentenceadventurekids.ads.findActivity
+import com.ruqiazaitoon.sentenceadventurekids.data.ProgressRepository
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StatChip
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryActionButton
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryPanel
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryTopBar
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StorybookScreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsDeepBlue
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsGrassGreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsInk
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsMagicPurple
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsPanel
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsSunnyYellow
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RewardsScreen(onBack: () -> Unit) {
     val stars by ProgressRepository.stars.collectAsState()
     val coins by ProgressRepository.coins.collectAsState()
     val badges by ProgressRepository.badges.collectAsState()
+    val activity = LocalContext.current.findActivity()
+    var rewardMessage by remember { mutableStateOf("Earn a small bonus after a grown-up approved ad.") }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("My Treasures", style = MaterialTheme.typography.headlineLarge) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = KidsSoftPink)
-            )
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(Brush.verticalGradient(listOf(KidsSoftPink, KidsCloudWhite)))
+    StorybookScreen {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                RewardRow(icon = Icons.Default.Stars, label = "Stars", value = stars.toString(), color = KidsSunnyYellow)
-                RewardRow(icon = Icons.Default.MonetizationOn, label = "Coins", value = coins.toString(), color = KidsMagicPurple)
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                Text(
-                    "Badges Earned",
-                    style = MaterialTheme.typography.titleLarge.copy(color = KidsDeepBlue)
-                )
-                
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp)
-                ) {
-                    items(badges) { badge ->
-                        BadgeItem(badge)
+            StoryTopBar(
+                title = "Treasure Shelf",
+                subtitle = "Rewards for brave reading",
+                onBack = onBack
+            )
+
+            StoryPanel(modifier = Modifier.fillMaxWidth(), color = KidsPanel, borderColor = KidsSunnyYellow) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(painterResource(R.drawable.ic_story_treasure), contentDescription = null, modifier = Modifier.size(112.dp))
+                    Spacer(Modifier.width(14.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        StatChip(Icons.Default.Stars, "stars", stars.toString(), KidsSunnyYellow)
+                        StatChip(Icons.Default.MonetizationOn, "coins", coins.toString(), KidsMagicPurple)
                     }
                 }
             }
-        }
-    }
-}
 
-@Composable
-fun RewardRow(icon: ImageVector, label: String, value: String, color: Color) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.8f))
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(40.dp))
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(label, style = MaterialTheme.typography.titleLarge)
+            StoryPanel(modifier = Modifier.fillMaxWidth(), borderColor = KidsMagicPurple) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        "Bonus Practice Reward",
+                        style = MaterialTheme.typography.titleLarge.copy(color = KidsInk, fontWeight = FontWeight.Black)
+                    )
+                    Text(rewardMessage, style = MaterialTheme.typography.bodyLarge.copy(color = KidsDeepBlue))
+                    StoryActionButton(
+                        text = "Watch Bonus",
+                        icon = Icons.Default.PlayCircle,
+                        onClick = {
+                            val currentActivity = activity
+                            if (currentActivity == null) {
+                                rewardMessage = "Bonus is not available right now."
+                            } else {
+                                rewardMessage = "Loading bonus..."
+                                AdsController.showRewardedBonus(
+                                    activity = currentActivity,
+                                    onRewardEarned = {
+                                        ProgressRepository.addRewardedPracticeBonus()
+                                        rewardMessage = "Bonus collected: 2 stars and 20 coins."
+                                    },
+                                    onDone = {
+                                        if (rewardMessage == "Loading bonus...") {
+                                            rewardMessage = "Bonus ad is still getting ready. Try again soon."
+                                        }
+                                    }
+                                )
+                            }
+                        },
+                        color = KidsMagicPurple,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
+
             Text(
-                value,
-                style = MaterialTheme.typography.headlineMedium.copy(color = KidsDeepBlue)
+                "Badges",
+                style = MaterialTheme.typography.headlineLarge.copy(color = KidsInk, fontWeight = FontWeight.Black)
             )
+
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(badges) { badge ->
+                    BadgeItem(badge)
+                }
+            }
+
+            FriendlyBannerAd()
         }
     }
 }
 
 @Composable
 fun BadgeItem(name: String) {
-    Surface(
-        color = KidsGrassGreen,
-        shape = MaterialTheme.shapes.medium,
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    StoryPanel(modifier = Modifier.fillMaxWidth(), borderColor = KidsGrassGreen) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color.White)
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(name, style = MaterialTheme.typography.titleMedium.copy(color = Color.White))
+            Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = KidsSunnyYellow, modifier = Modifier.size(42.dp))
+            Column {
+                Text(name, style = MaterialTheme.typography.titleLarge.copy(color = KidsInk, fontWeight = FontWeight.Black))
+                Text("Keep reading to collect more.", style = MaterialTheme.typography.bodyLarge.copy(color = KidsDeepBlue))
+            }
         }
     }
 }

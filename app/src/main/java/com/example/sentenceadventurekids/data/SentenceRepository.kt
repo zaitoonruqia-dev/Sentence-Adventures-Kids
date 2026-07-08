@@ -1,18 +1,20 @@
-package com.example.sentenceadventurekids.data
+package com.ruqiazaitoon.sentenceadventurekids.data
 
-import com.example.sentenceadventurekids.BuildConfig
-import com.example.sentenceadventurekids.model.AnimationType
-import com.example.sentenceadventurekids.model.Sentence
+import com.ruqiazaitoon.sentenceadventurekids.BuildConfig
+import com.ruqiazaitoon.sentenceadventurekids.model.AnimationType
+import com.ruqiazaitoon.sentenceadventurekids.model.Sentence
+import com.google.gson.JsonParser
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class SentenceRepository {
-    private val apiKey = "Bearer ${BuildConfig.GROQ_API_KEY}"
+    private val groqApiKey = BuildConfig.GROQ_API_KEY.trim()
+    private val authorizationHeader = "Bearer $groqApiKey"
     
     private val logging = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
     }
     
     private val client = OkHttpClient.Builder()
@@ -28,39 +30,101 @@ class SentenceRepository {
     private val apiService = retrofit.create(GroqApiService::class.java)
 
     suspend fun fetchSentencesForLevel(level: Int): List<Sentence> {
-        println("Groq: Fetching sentences for level $level")
-        val prompt = when (level) {
-            1 -> "Return exactly 3 very simple sentences for a toddler (3 words max). No numbers, no bullets, no periods. Example: 'I run', 'Cat is happy'. One sentence per line."
-            2 -> "Return exactly 3 simple sentences for a kid (5 words max) with adjectives. No numbers, no bullets, no periods. Example: 'The big red dog runs'. One sentence per line."
-            3 -> "Return exactly 3 sentences for a kid (8 words max) with conjunctions. No numbers, no bullets, no periods. Example: 'I like apples and bananas'. One sentence per line."
-            else -> "Return exactly 3 simple sentences for kids. One sentence per line."
-        }
+        if (groqApiKey.isBlank()) return fallbackSentences(level)
 
         return try {
             val response = apiService.getChatCompletion(
-                apiKey,
+                authorizationHeader,
                 GroqRequest(
-                    model = "llama-3.1-8b-instant",
-                    messages = listOf(Message("user", prompt))
+                    messages = listOf(
+                        Message("system", "You write safe, cheerful, age-appropriate reading practice for children. Avoid scary, violent, branded, political, medical, or adult topics."),
+                        Message("user", levelPrompt(level))
+                    )
                 )
             )
             val content = response.choices.firstOrNull()?.message?.content ?: ""
-            content.split("\n")
-                .filter { it.isNotBlank() }
-                .mapIndexed { index, text ->
-                    val cleanedText = text.trim().removePrefix("- ").removePrefix("${index + 1}. ")
-                    Sentence(
-                        id = "groq_${level}_$index",
-                        text = cleanedText,
-                        animationType = mapTextToAnimation(cleanedText)
-                    )
-                }
+            val parsed = parseGroqSentences(content, level)
+            parsed.ifEmpty { fallbackSentences(level) }
         } catch (e: Exception) {
-            // Fallback sentences
-            listOf(
-                Sentence("fallback_1", "I see you", animationType = AnimationType.SMILE),
-                Sentence("fallback_2", "Sun is bright", animationType = AnimationType.HAPPY)
-            )
+            fallbackSentences(level)
+        }
+    }
+
+    private fun levelPrompt(level: Int): String {
+        val guide = when (level) {
+            1 -> "Level 1: exactly 3 tiny sentences, 2 to 3 words each, simple nouns and verbs."
+            2 -> "Level 2: exactly 3 playful sentences, 4 to 5 words each, include one describing word."
+            3 -> "Level 3: exactly 3 kid-friendly sentences, 6 to 8 words each, include and/or/because once."
+            else -> "Level 4: exactly 3 connected story sentences, 7 to 10 words each, about one gentle adventure."
+        }
+        return """
+            $guide
+            Return only JSON in this exact shape:
+            {"sentences":["sentence one","sentence two","sentence three"]}
+            Rules:
+            - No numbering, bullets, markdown, quotes inside sentences, emojis, or ending punctuation.
+            - Use concrete action words such as run, jump, smile, eat, read, play, help.
+            - Keep vocabulary familiar for early readers.
+        """.trimIndent()
+    }
+
+    private fun parseGroqSentences(content: String, level: Int): List<Sentence> {
+        val jsonStart = content.indexOf('{')
+        val jsonEnd = content.lastIndexOf('}')
+        val fromJson = if (jsonStart >= 0 && jsonEnd > jsonStart) {
+            runCatching {
+                JsonParser.parseString(content.substring(jsonStart, jsonEnd + 1))
+                    .asJsonObject
+                    .getAsJsonArray("sentences")
+                    .mapNotNull { it.asString.cleanSentenceText() }
+            }.getOrDefault(emptyList())
+        } else {
+            emptyList()
+        }
+
+        val candidates = fromJson.ifEmpty {
+            content.lines().mapNotNull { line ->
+                line.cleanSentenceText()
+            }
+        }
+
+        return candidates
+            .distinct()
+            .take(3)
+            .mapIndexed { index, text ->
+                Sentence(
+                    id = "groq_${level}_$index",
+                    text = text,
+                    animationType = mapTextToAnimation(text)
+                )
+            }
+    }
+
+    private fun String.cleanSentenceText(): String? {
+        val cleaned = trim()
+            .removePrefix("-")
+            .replace(Regex("^\\d+[.)]\\s*"), "")
+            .trim()
+            .trim('"', '\'', '.', '!', '?')
+            .replace(Regex("\\s+"), " ")
+
+        val words = cleaned.split(" ").filter { it.isNotBlank() }
+        return cleaned.takeIf {
+            it.isNotBlank() &&
+                words.size in 2..10 &&
+                it.all { char -> char.isLetter() || char.isWhitespace() || char == '\'' }
+        }
+    }
+
+    private fun fallbackSentences(level: Int): List<Sentence> {
+        val sentences = when (level) {
+            1 -> listOf("I jump", "We smile", "Birds sing")
+            2 -> listOf("The red kite flies", "A happy frog hops", "My tiny boat floats")
+            3 -> listOf("I read and my friend smiles", "The puppy runs because bells ring", "We jump and clap together")
+            else -> listOf("Mia opens a map and grins", "Her little boat sails past flowers", "Friends cheer because the story shines")
+        }
+        return sentences.mapIndexed { index, text ->
+            Sentence("fallback_${level}_$index", text, animationType = mapTextToAnimation(text))
         }
     }
 
@@ -72,7 +136,7 @@ class SentenceRepository {
             lowerText.contains("sleep") -> AnimationType.SLEEP
             lowerText.contains("happy") || lowerText.contains("glad") -> AnimationType.HAPPY
             lowerText.contains("eat") -> AnimationType.EAT
-            lowerText.contains("smile") || lowerText.contains("laugh") -> AnimationType.SMILE
+            lowerText.contains("smile") || lowerText.contains("laugh") || lowerText.contains("cheer") || lowerText.contains("grin") -> AnimationType.SMILE
             else -> AnimationType.NONE
         }
     }

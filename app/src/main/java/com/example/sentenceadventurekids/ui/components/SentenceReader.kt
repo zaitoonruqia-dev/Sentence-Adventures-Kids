@@ -1,9 +1,11 @@
-package com.example.sentenceadventurekids.ui.components
+package com.ruqiazaitoon.sentenceadventurekids.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -13,11 +15,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sentenceadventurekids.model.Sentence
-import com.example.sentenceadventurekids.ui.theme.KidsDeepBlue
-import com.example.sentenceadventurekids.ui.theme.KidsMagicPurple
+import com.ruqiazaitoon.sentenceadventurekids.model.Sentence
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsDeepBlue
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsMagicPurple
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsSunnyYellow
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SentenceReader(
     sentence: Sentence,
@@ -35,9 +39,10 @@ fun SentenceReader(
         highlightedWordIndex = -1
     }
 
-    Row(
+    FlowRow(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         sentence.words.forEachIndexed { index, word ->
             WordView(
@@ -45,9 +50,6 @@ fun SentenceReader(
                 isHighlighted = index == highlightedWordIndex,
                 onTap = { onWordTap(word) }
             )
-            if (index < sentence.words.size - 1) {
-                Spacer(modifier = Modifier.width(8.dp))
-            }
         }
     }
 }
@@ -67,19 +69,26 @@ fun WordView(
         label = "scale"
     )
 
-    Text(
-        text = word,
-        style = MaterialTheme.typography.displayLarge.copy(
-            color = color,
-            fontSize = 40.sp,
-            fontWeight = if (isHighlighted) FontWeight.ExtraBold else FontWeight.Bold
-        ),
+    Surface(
         modifier = Modifier
             .clickable { onTap() }
             .padding(4.dp)
             .graphicsLayer(
                 scaleX = scale,
                 scaleY = scale
-            )
-    )
+            ),
+        shape = RoundedCornerShape(18.dp),
+        color = if (isHighlighted) KidsSunnyYellow else Color.White,
+        shadowElevation = if (isHighlighted) 6.dp else 2.dp
+    ) {
+        Text(
+            text = word,
+            style = MaterialTheme.typography.displayLarge.copy(
+                color = color,
+                fontSize = 34.sp,
+                fontWeight = if (isHighlighted) FontWeight.ExtraBold else FontWeight.Bold
+            ),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+        )
+    }
 }

@@ -1,4 +1,4 @@
-package com.example.sentenceadventurekids
+package com.ruqiazaitoon.sentenceadventurekids
 
 import org.junit.Test
 

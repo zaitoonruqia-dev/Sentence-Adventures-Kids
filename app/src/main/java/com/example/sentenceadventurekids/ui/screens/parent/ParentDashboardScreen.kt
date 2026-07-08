@@ -1,192 +1,209 @@
-package com.example.sentenceadventurekids.ui.screens.parent
+package com.ruqiazaitoon.sentenceadventurekids.ui.screens.parent
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.sentenceadventurekids.data.ProgressRepository
-import com.example.sentenceadventurekids.ui.theme.*
+import androidx.compose.ui.window.Dialog
+import com.ruqiazaitoon.sentenceadventurekids.ads.FriendlyBannerAd
+import com.ruqiazaitoon.sentenceadventurekids.data.ProgressRepository
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StatChip
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryActionButton
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryPanel
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StoryTopBar
+import com.ruqiazaitoon.sentenceadventurekids.ui.components.StorybookScreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsCoral
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsDeepBlue
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsGrassGreen
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsInk
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsMagicPurple
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsPanel
+import com.ruqiazaitoon.sentenceadventurekids.ui.theme.KidsSunnyYellow
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ParentDashboardScreen(onBack: () -> Unit) {
     val stars by ProgressRepository.stars.collectAsState()
     val sentencesRead by ProgressRepository.sentencesRead.collectAsState()
     val unlockedLevels by ProgressRepository.unlockedLevels.collectAsState()
+    var showResetDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { 
-                    Text(
-                        "Parent Dashboard", 
-                        style = MaterialTheme.typography.headlineLarge.copy(color = KidsDeepBlue)
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = KidsDeepBlue)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = KidsSkyBlue)
-            )
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(Brush.verticalGradient(listOf(KidsSkyBlue, KidsCloudWhite)))
+    StorybookScreen {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            StoryTopBar(
+                title = "Parent Corner",
+                subtitle = "Quiet controls and progress at a glance",
+                onBack = onBack
+            )
+
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                item { SectionHeader(icon = Icons.Default.Analytics, title = "Reading Progress") }
                 item {
-                    SectionHeader(icon = Icons.Default.Analytics, title = "Child's Progress")
+                    StoryPanel(modifier = Modifier.fillMaxWidth(), borderColor = KidsSunnyYellow) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            StatChip(Icons.Default.Analytics, "stars earned", stars.toString(), KidsSunnyYellow)
+                            StatChip(Icons.Default.Timer, "sentences read", sentencesRead.toString(), KidsGrassGreen)
+                            StatChip(Icons.Default.Lock, "worlds open", "${unlockedLevels.size}/4", KidsMagicPurple)
+                        }
+                    }
                 }
 
-                item {
-                    StatsCard(
-                        stats = listOf(
-                            "Total Stars" to stars.toString(),
-                            "Sentences Read" to sentencesRead.toString(),
-                            "Levels Unlocked" to unlockedLevels.size.toString()
-                        )
-                    )
-                }
-
-                item {
-                    SectionHeader(icon = Icons.Default.Timer, title = "Learning Controls")
-                }
-
+                item { SectionHeader(icon = Icons.Default.Timer, title = "Learning Controls") }
                 item {
                     SettingsToggle(
-                        label = "Daily Goal (10 mins)",
-                        description = "Notify when child reaches 10 minutes of reading.",
+                        label = "Daily reading goal",
+                        description = "Keep practice gentle with a 10 minute target.",
                         initialValue = true
                     )
                 }
-
                 item {
                     SettingsToggle(
-                        label = "Parental Lock",
-                        description = "Require a code to access shop or settings.",
+                        label = "Parent lock",
+                        description = "Require grown-up help before changing settings.",
                         initialValue = false
                     )
                 }
-                
                 item {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = { /* Reset Progress Logic */ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.7f)),
+                    StoryActionButton(
+                        text = "Reset Progress",
+                        icon = Icons.Default.DeleteForever,
+                        onClick = { showResetDialog = true },
+                        color = KidsCoral,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Reset All Progress", color = Color.White)
-                    }
+                    )
                 }
             }
+
+            FriendlyBannerAd()
         }
+    }
+
+    if (showResetDialog) {
+        ResetProgressDialog(
+            onCancel = { showResetDialog = false },
+            onConfirm = {
+                ProgressRepository.resetAll()
+                showResetDialog = false
+            }
+        )
     }
 }
 
 @Composable
 fun SectionHeader(icon: ImageVector, title: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 8.dp)
-    ) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, contentDescription = null, tint = KidsDeepBlue)
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold,
-                color = KidsDeepBlue
+            style = MaterialTheme.typography.headlineLarge.copy(
+                fontWeight = FontWeight.Black,
+                color = KidsInk
             )
         )
     }
 }
 
 @Composable
-fun StatsCard(stats: List<Pair<String, String>>) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.8f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            stats.forEachIndexed { index, (label, value) ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(label, style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        value,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = KidsDeepBlue
-                        )
-                    )
-                }
-                if (index < stats.size - 1) {
-                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
-                }
+fun SettingsToggle(label: String, description: String, initialValue: Boolean) {
+    var checked by remember { mutableStateOf(initialValue) }
+
+    StoryPanel(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(label, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black, color = KidsInk))
+                Text(description, style = MaterialTheme.typography.bodyLarge.copy(color = KidsDeepBlue))
             }
+            Spacer(modifier = Modifier.width(14.dp))
+            Switch(
+                checked = checked,
+                onCheckedChange = { checked = it },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = KidsGrassGreen,
+                    checkedTrackColor = KidsGrassGreen.copy(alpha = 0.35f)
+                )
+            )
         }
     }
 }
 
 @Composable
-fun SettingsToggle(label: String, description: String, initialValue: Boolean) {
-    var checked by remember { mutableStateOf(initialValue) }
-    
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.8f))
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(label, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+private fun ResetProgressDialog(
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    Dialog(onDismissRequest = onCancel) {
+        StoryPanel(color = KidsPanel, borderColor = KidsCoral) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                Icon(Icons.Default.RestartAlt, contentDescription = null, tint = KidsCoral)
                 Text(
-                    description, 
-                    style = MaterialTheme.typography.bodySmall.copy(lineHeight = 16.sp),
-                    color = Color.Gray
+                    "Reset Progress?",
+                    style = MaterialTheme.typography.headlineLarge.copy(color = KidsInk, fontWeight = FontWeight.Black),
+                    textAlign = TextAlign.Center
                 )
+                Text(
+                    "This returns stars, badges, and unlocked worlds to the starting point.",
+                    style = MaterialTheme.typography.bodyLarge.copy(color = KidsDeepBlue),
+                    textAlign = TextAlign.Center
+                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    StoryActionButton(
+                        text = "Keep",
+                        icon = Icons.Default.Lock,
+                        onClick = onCancel,
+                        color = KidsGrassGreen,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StoryActionButton(
+                        text = "Reset",
+                        icon = Icons.Default.DeleteForever,
+                        onClick = onConfirm,
+                        color = KidsCoral,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Switch(
-                checked = checked,
-                onCheckedChange = { checked = it },
-                colors = SwitchDefaults.colors(checkedThumbColor = KidsGrassGreen)
-            )
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.example.sentenceadventurekids.data
+package com.ruqiazaitoon.sentenceadventurekids.data
 
 import retrofit2.http.Body
 import retrofit2.http.Header
@@ -13,9 +13,10 @@ interface GroqApiService {
 }
 
 data class GroqRequest(
-    val model: String = "llama3-8b-8192",
+    val model: String = "llama-3.1-8b-instant",
     val messages: List<Message>,
-    val temperature: Double = 0.7
+    val temperature: Double = 0.55,
+    val max_tokens: Int = 220
 )
 
 data class Message(

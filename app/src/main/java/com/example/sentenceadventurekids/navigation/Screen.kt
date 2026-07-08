@@ -1,4 +1,4 @@
-package com.example.sentenceadventurekids.navigation
+package com.ruqiazaitoon.sentenceadventurekids.navigation
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
